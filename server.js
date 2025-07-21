@@ -1,6 +1,16 @@
+const express = require('express');
+const http = require('http');
 const WebSocket = require('ws');
+const path = require('path');
 const PORT = process.env.PORT || 3000;
-const wss = new WebSocket.Server({ port: PORT });
+
+const app = express();
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'kchat.html')));
+
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
 let users = {}; // { id: ws }
 let accounts = {}; // { login: { password, nick, ws, id } }
@@ -66,4 +76,6 @@ wss.on('connection', function connection(ws) {
     });
 });
 
-console.log(`KChat сервер с аккаунтами запущен на ws://localhost:${PORT}`);
+server.listen(PORT, () => {
+  console.log(`KChat сервер с аккаунтами запущен на ws://localhost:${PORT}`);
+});
