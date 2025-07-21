@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>KChat Messenger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { margin: 0; padding: 0; }
+        #main-layout { flex-direction: column; }
+        #sidebar { min-width: 0; width: 100%; display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 10px 0; }
+        #chat-container { width: 100%; min-width: 0; }
+        #add-user-block, #users-list { width: 100%; }
+        #input-container { flex-direction: row; gap: 8px; }
+        #message-input { width: 70vw; min-width: 120px; font-size: 16px; }
+        #send-btn { font-size: 16px; padding: 8px 16px; }
+        .modal-content { max-width: 95vw; min-width: 0; }
+        @media (max-width: 600px) {
+            #main-layout { flex-direction: column; }
+            #sidebar { flex-direction: column; align-items: stretch; gap: 8px; }
+            #chat-container { width: 100%; }
+            #messages { font-size: 15px; }
+            #add-user-block, #users-list { width: 100%; }
+            .modal-content { max-width: 98vw; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Загрузка KChat...</div>
+        </div>
+    </div>
+    <div id="auth-modal" style="display:flex;">
+        <div class="modal-content" id="auth-content">
+            <h2 id="auth-title">Вход</h2>
+            <div id="login-block">
+                <input type="text" id="login-login" placeholder="Логин">
+                <input type="password" id="login-password" placeholder="Пароль">
+                <button id="login-btn">Войти</button>
+                <button id="show-register-btn">Создать аккаунт</button>
+            </div>
+            <div id="register-block" style="display:none;">
+                <input type="text" id="register-login" placeholder="Логин">
+                <input type="password" id="register-password" placeholder="Пароль">
+                <input type="password" id="register-password2" placeholder="Повторите пароль">
+                <input type="text" id="register-nick" placeholder="Ник (для друзей)">
+                <button id="register-btn">Зарегистрироваться</button>
+                <button id="show-login-btn">Назад</button>
+            </div>
+        </div>
+    </div>
+    <div id="main-layout" style="display:none;">
+        <div id="sidebar">
+            <button id="theme-btn" title="Настройки темы">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" fill="currentColor"/>
+                </svg>
+            </button>
+            <div id="users-list"></div>
+            <div id="add-user-block">
+                <input type="text" id="add-user-input" placeholder="ID собеседника">
+                <button id="add-user-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4.5v15m7.5-7.5h-15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div id="chat-container">
+            <div id="top-bar">
+                <div id="chat-header">
+                    <div id="chat-avatar"></div>
+                    <span id="chat-title"></span>
+                </div>
+                <div id="top-bar-actions">
+                    <button id="add-contact-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                            <line x1="19" y1="8" x2="19" y2="14" stroke="currentColor" stroke-width="2"/>
+                            <line x1="22" y1="11" x2="16" y2="11" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <button id="video-call-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <polygon points="23 7 16 12 23 17 23 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                    <button id="voice-call-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="messages">
+                <div class="empty-chat">Нет сообщений. Напишите что-нибудь…</div>
+            </div>
+            <div id="input-container">
+                <button id="attach-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <input type="text" id="message-input" placeholder="Сообщение">
+                <button id="emoji-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="m9 9 1.5 1.5L12 9l1.5 1.5L15 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 15s1.5 2 4 2 4-2 4-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button id="send-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <line x1="22" y1="2" x2="11" y2="13" stroke="currentColor" stroke-width="2"/>
+                        <polygon points="22,2 15,22 11,13 2,9 22,2" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="theme-modal" style="display:none;">
+        <div class="modal-content">
+            <label>Выберите тему:</label>
+            <select id="theme-select">
+                <option value="light">Светлая</option>
+                <option value="dark">Тёмная</option>
+                <option value="blue">Голубая</option>
+            </select>
+            <button id="save-theme-btn">Выбрать</button>
+        </div>
+    </div>
+    <div id="settings-modal" style="display:none;">
+        <div class="modal-content">
+            <label for="edit-text">Изменить текст сообщения:</label>
+            <input type="text" id="edit-text">
+            <button id="save-edit-btn">Сохранить</button>
+            <button id="delete-edit-btn">Удалить</button>
+            <button id="close-modal-btn">Отмена</button>
+        </div>
+    </div>
+    <script>
+        // --- Тема ---
+        function applyTheme(theme) {
+            document.body.classList.remove('theme-light', 'theme-dark', 'theme-blue');
+            document.body.classList.add('theme-' + theme);
+        }
+        window.onload = function() {
+            let savedTheme = localStorage.getItem('kchat-theme');
+            if (!savedTheme) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('theme-modal').style.display = 'flex';
+            } else {
+                applyTheme(savedTheme);
+                setTimeout(function() {
+                    document.getElementById('loader').style.display = 'none';
+                    tryAutoLogin();
+                }, 700);
+            }
+        };
+        document.getElementById('save-theme-btn').onclick = function() {
+            let theme = document.getElementById('theme-select').value;
+            localStorage.setItem('kchat-theme', theme);
+            applyTheme(theme);
+            document.getElementById('theme-modal').style.display = 'none';
+            document.getElementById('main-layout').style.display = 'flex';
+        };
+
+        // --- Аутентификация и автологин ---
+        let myId = null;
+        let myNick = null;
+        let ws = null;
+        let users = [];
+        let chats = {};
+        let currentUser = null;
+        let editIdx = null;
+        let contacts = JSON.parse(localStorage.getItem('kchat-contacts') || '[]');
+
+        function showAuth(mode) {
+            document.getElementById('auth-modal').style.display = 'flex';
+            document.getElementById('login-block').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('register-block').style.display = mode === 'register' ? 'block' : 'none';
+            document.getElementById('auth-title').textContent = mode === 'login' ? 'Вход' : 'Регистрация';
+        }
+        function tryAutoLogin() {
+            let saved = localStorage.getItem('kchat-account');
+            if (saved) {
+                let acc = JSON.parse(saved);
+                ws = new WebSocket('ws://localhost:3000');
+                ws.onopen = () => {
+                    ws.send(JSON.stringify({
+                        type: 'login',
+                        login: acc.login,
+                        password: acc.password
+                    }));
+                };
+                ws.onmessage = (event) => handleServer(event, true);
+            } else {
+                showAuth('login');
+            }
+        }
+        showAuth('login');
+        document.getElementById('show-register-btn').onclick = () => showAuth('register');
+        document.getElementById('show-login-btn').onclick = () => showAuth('login');
+        document.getElementById('login-btn').onclick = function() {
+            ws = new WebSocket('ws://localhost:3000');
+            ws.onopen = () => {
+                ws.send(JSON.stringify({
+                    type: 'login',
+                    login: document.getElementById('login-login').value.trim(),
+                    password: document.getElementById('login-password').value
+                }));
+            };
+            ws.onmessage = (event) => handleServer(event, false);
+        };
+        document.getElementById('register-btn').onclick = function() {
+            const login = document.getElementById('register-login').value.trim();
+            const pass1 = document.getElementById('register-password').value;
+            const pass2 = document.getElementById('register-password2').value;
+            const nick = document.getElementById('register-nick').value.trim();
+            if (!login || !pass1 || !pass2 || !nick) return alert('Заполните все поля!');
+            if (pass1 !== pass2) return alert('Пароли не совпадают!');
+            ws = new WebSocket('ws://localhost:3000');
+            ws.onopen = () => {
+                ws.send(JSON.stringify({
+                    type: 'register',
+                    login, password: pass1, nick
+                }));
+            };
+            ws.onmessage = (event) => handleServer(event, false, {login, password: pass1});
+        };
+        function handleServer(event, isAuto, saveAcc) {
+            const data = JSON.parse(event.data);
+            if (data.error) return alert(data.text);
+            if (data.system && data.nick && data.id) {
+                myId = data.id;
+                myNick = data.nick;
+                document.getElementById('auth-modal').style.display = 'none';
+                document.getElementById('main-layout').style.display = 'flex';
+                if (isAuto || saveAcc) {
+                    let acc = saveAcc ? saveAcc : {
+                        login: document.getElementById('login-login').value.trim(),
+                        password: document.getElementById('login-password').value
+                    };
+                    localStorage.setItem('kchat-account', JSON.stringify(acc));
+                }
+                initChat();
+            } else if (data.system) {
+                alert(data.text);
+            } else if (data.from && data.text) {
+                receiveMessage(data.from, data.nick, data.text);
+            }
+        }
+
+        // --- Чат ---
+        function initChat() {
+            const usersListDiv = document.getElementById('users-list');
+            const addUserInput = document.getElementById('add-user-input');
+            const addUserBtn = document.getElementById('add-user-btn');
+            const chatTitle = document.getElementById('chat-title');
+            const messagesDiv = document.getElementById('messages');
+            const messageInput = document.getElementById('message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const editTextInput = document.getElementById('edit-text');
+            const saveEditBtn = document.getElementById('save-edit-btn');
+            const deleteEditBtn = document.getElementById('delete-edit-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const themeBtn = document.getElementById('theme-btn');
+            const themeModal = document.getElementById('theme-modal');
+            const themeSelect = document.getElementById('theme-select');
+            const closeThemeBtn = document.getElementById('close-theme-btn');
+            const addContactBtn = document.getElementById('add-contact-btn');
+            const videoCallBtn = document.getElementById('video-call-btn');
+            const voiceCallBtn = document.getElementById('voice-call-btn');
+            const attachBtn = document.getElementById('attach-btn');
+            const emojiBtn = document.getElementById('emoji-btn');
+
+            function renderUsers() {
+                usersListDiv.innerHTML = '';
+                users.forEach((userId, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'chat-btn' + (userId === currentUser ? ' active' : '');
+                    btn.textContent = 'ID: ' + userId;
+                    btn.onclick = () => {
+                        currentUser = userId;
+                        localStorage.setItem('kchat-lastchat', userId);
+                        renderUsers();
+                        renderMessages();
+                    };
+                    usersListDiv.appendChild(btn);
+                });
+            }
+
+            addUserBtn.onclick = () => {
+                const id = addUserInput.value.trim();
+                if (id && !users.includes(id)) {
+                    users.push(id);
+                    chats[id] = [];
+                    currentUser = id;
+                    localStorage.setItem('kchat-lastchat', id);
+                    addUserInput.value = '';
+                    renderUsers();
+                    renderMessages();
+                }
+            };
+
+            addUserInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') addUserBtn.click();
+            });
+
+            function renderMessages() {
+                chatTitle.textContent = currentUser ? currentUser : '';
+                const chatAvatar = document.getElementById('chat-avatar');
+                if (currentUser) {
+                    addContactBtn.style.display = 'flex';
+                    chatAvatar.textContent = currentUser.charAt(0).toUpperCase();
+                    chatAvatar.style.display = 'flex';
+                } else {
+                    addContactBtn.style.display = 'none';
+                    chatAvatar.style.display = 'none';
+                }
+                messagesDiv.innerHTML = '';
+                if (!currentUser || !chats[currentUser] || chats[currentUser].length === 0) {
+                    messagesDiv.innerHTML = `<div class="empty-chat">Нет сообщений. Напишите что-нибудь…</div>`;
+                } else {
+                    chats[currentUser].forEach((msg, idx) => {
+                        const msgDiv = document.createElement('div');
+                        msgDiv.className = `message ${msg.from === myId ? 'samrat' : 'other'}`;
+                        msgDiv.innerHTML = `<span class="user">${msg.from === myId ? "Вы" : (msg.nick || msg.from)}:</span> ${msg.text}`;
+                        msgDiv.oncontextmenu = function(e) {
+                            e.preventDefault();
+                            editIdx = idx;
+                            editTextInput.value = msg.text;
+                            settingsModal.style.display = 'flex';
+                        };
+                        messagesDiv.appendChild(msgDiv);
+                    });
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            }
+
+            sendBtn.onclick = () => {
+                const text = messageInput.value.trim();
+                if (text && currentUser && ws && ws.readyState === 1) {
+                    ws.send(JSON.stringify({ type: 'msg', to: currentUser, text }));
+                    if (!chats[currentUser]) chats[currentUser] = [];
+                    chats[currentUser].push({ from: myId, nick: myNick, text });
+                    messageInput.value = '';
+                    renderMessages();
+                }
+            };
+
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') sendBtn.click();
+            });
+
+            function receiveMessage(fromId, nick, text) {
+                if (!users.includes(fromId)) {
+                    users.push(fromId);
+                    chats[fromId] = [];
+                }
+                if (!chats[fromId]) chats[fromId] = [];
+                chats[fromId].push({ from: fromId, nick, text });
+                renderUsers();
+                if (currentUser === fromId) renderMessages();
+            }
+
+            saveEditBtn.onclick = () => {
+                if (editIdx !== null && editTextInput.value.trim() && currentUser) {
+                    if (chats[currentUser][editIdx].from === myId) {
+                        chats[currentUser][editIdx].text = editTextInput.value.trim();
+                        renderMessages();
+                    }
+                }
+                settingsModal.style.display = 'none';
+            };
+
+            deleteEditBtn.onclick = () => {
+                if (editIdx !== null && currentUser) {
+                    if (chats[currentUser][editIdx].from === myId) {
+                        chats[currentUser].splice(editIdx, 1);
+                        renderMessages();
+                    }
+                }
+                settingsModal.style.display = 'none';
+            };
+
+            closeModalBtn.onclick = () => {
+                settingsModal.style.display = 'none';
+            };
+
+            settingsModal.onclick = (e) => {
+                if (e.target === settingsModal) settingsModal.style.display = 'none';
+            };
+
+            themeBtn.onclick = () => {
+                themeModal.style.display = 'flex';
+            };
+            closeThemeBtn.onclick = () => {
+                themeModal.style.display = 'none';
+            };
+            themeSelect.onchange = () => {
+                applyTheme(themeSelect.value);
+            };
+
+            // --- Контакты ---
+            addContactBtn.onclick = () => {
+                if (currentUser && !contacts.find(c => c.id === currentUser)) {
+                    contacts.push({ id: currentUser, nick: chats[currentUser]?.[0]?.nick || currentUser });
+                    localStorage.setItem('kchat-contacts', JSON.stringify(contacts));
+                    showNotification('Контакт добавлен!', 'success');
+                }
+            };
+
+            // --- Видео и голосовые звонки ---
+            videoCallBtn.onclick = () => {
+                if (currentUser) {
+                    showNotification('Видеозвонок недоступен в демо версии', 'info');
+                }
+            };
+
+            voiceCallBtn.onclick = () => {
+                if (currentUser) {
+                    showNotification('Голосовой звонок недоступен в демо версии', 'info');
+                }
+            };
+
+            // --- Прикрепление файлов ---
+            attachBtn.onclick = () => {
+                showNotification('Прикрепление файлов недоступно в демо версии', 'info');
+            };
+
+            // --- Эмодзи ---
+            emojiBtn.onclick = () => {
+                const emojis = ['😀', '😂', '😍', '🤔', '👍', '❤️', '🔥', '💯', '🎉', '👋'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                messageInput.value += randomEmoji;
+                messageInput.focus();
+            };
+
+            // --- Уведомления ---
+            function showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: var(--accent);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 12px var(--shadow);
+                    z-index: 10000;
+                    font-weight: 500;
+                    animation: slideInRight 0.3s ease;
+                `;
+                
+                if (type === 'success') {
+                    notification.style.background = '#34C759';
+                } else if (type === 'error') {
+                    notification.style.background = '#FF3B30';
+                }
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOutRight 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+
+            // --- Восстановление последнего чата ---
+            let lastChat = localStorage.getItem('kchat-lastchat');
+            if (lastChat && users.includes(lastChat)) {
+                currentUser = lastChat;
+            }
+
+            renderUsers();
+            renderMessages();
+        }
+
+    </script>
+</body>
+</html>
