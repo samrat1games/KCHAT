@@ -35,6 +35,15 @@
     <div id="auth-modal" style="display:flex;">
         <div class="modal-content" id="auth-content">
             <h2 id="auth-title">Вход</h2>
+            <div id="server-select-block" style="margin-bottom: 12px;">
+                <label for="server-select">Сервер:</label>
+                <select id="server-select">
+                    <option value="wss://kchat-7l77.onrender.com">Render (wss://kchat-7l77.onrender.com)</option>
+                    <option value="ws://localhost:3000">Локальный (ws://localhost:3000)</option>
+                    <option value="custom">Другой...</option>
+                </select>
+                <input type="text" id="custom-server-input" placeholder="wss://example.com" style="display:none; margin-top: 6px; width: 100%;" />
+            </div>
             <div id="login-block">
                 <input type="text" id="login-login" placeholder="Логин">
                 <input type="password" id="login-password" placeholder="Пароль">
@@ -143,6 +152,51 @@
         </div>
     </div>
     <script>
+        // --- Сервер ---
+        function getSelectedServer() {
+            const select = document.getElementById('server-select');
+            if (!select) return 'wss://kchat-7l77.onrender.com';
+            if (select.value === 'custom') {
+                return document.getElementById('custom-server-input').value.trim();
+            }
+            return select.value;
+        }
+        function saveSelectedServer() {
+            const server = getSelectedServer();
+            if (server) localStorage.setItem('kchat-server', server);
+        }
+        function loadSelectedServer() {
+            const saved = localStorage.getItem('kchat-server');
+            const select = document.getElementById('server-select');
+            const customInput = document.getElementById('custom-server-input');
+            if (!select || !customInput) return;
+            if (!saved || saved === 'wss://kchat-7l77.onrender.com' || saved === 'ws://localhost:3000') {
+                select.value = saved || 'wss://kchat-7l77.onrender.com';
+                customInput.style.display = 'none';
+            } else {
+                select.value = 'custom';
+                customInput.style.display = '';
+                customInput.value = saved;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('server-select');
+            const customInput = document.getElementById('custom-server-input');
+            if (select && customInput) {
+                select.addEventListener('change', function() {
+                    if (select.value === 'custom') {
+                        customInput.style.display = '';
+                        customInput.focus();
+                    } else {
+                        customInput.style.display = 'none';
+                        saveSelectedServer();
+                    }
+                });
+                customInput.addEventListener('input', saveSelectedServer);
+                select.addEventListener('input', saveSelectedServer);
+                loadSelectedServer();
+            }
+        });
         // --- Тема ---
         function applyTheme(theme) {
             document.body.classList.remove('theme-light', 'theme-dark', 'theme-blue');
@@ -187,9 +241,10 @@
         }
         function tryAutoLogin() {
             let saved = localStorage.getItem('kchat-account');
+            let server = localStorage.getItem('kchat-server') || 'wss://kchat-7l77.onrender.com';
             if (saved) {
                 let acc = JSON.parse(saved);
-                ws = new WebSocket('ws://localhost:3000');
+                ws = new WebSocket(server);
                 ws.onopen = () => {
                     ws.send(JSON.stringify({
                         type: 'login',
@@ -206,7 +261,8 @@
         document.getElementById('show-register-btn').onclick = () => showAuth('register');
         document.getElementById('show-login-btn').onclick = () => showAuth('login');
         document.getElementById('login-btn').onclick = function() {
-            ws = new WebSocket('ws://localhost:3000');
+            let server = localStorage.getItem('kchat-server') || 'wss://kchat-7l77.onrender.com';
+            ws = new WebSocket(server);
             ws.onopen = () => {
                 ws.send(JSON.stringify({
                     type: 'login',
@@ -217,13 +273,14 @@
             ws.onmessage = (event) => handleServer(event, false);
         };
         document.getElementById('register-btn').onclick = function() {
+            let server = localStorage.getItem('kchat-server') || 'wss://kchat-7l77.onrender.com';
             const login = document.getElementById('register-login').value.trim();
             const pass1 = document.getElementById('register-password').value;
             const pass2 = document.getElementById('register-password2').value;
             const nick = document.getElementById('register-nick').value.trim();
             if (!login || !pass1 || !pass2 || !nick) return alert('Заполните все поля!');
             if (pass1 !== pass2) return alert('Пароли не совпадают!');
-            ws = new WebSocket('ws://localhost:3000');
+            ws = new WebSocket(server);
             ws.onopen = () => {
                 ws.send(JSON.stringify({
                     type: 'register',
