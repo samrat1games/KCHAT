@@ -7,38 +7,302 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body { margin: 0; padding: 0; }
-        #main-layout { flex-direction: column; }
-        #sidebar { min-width: 0; width: 100%; display: flex; flex-direction: row; align-items: center; gap: 10px; padding: 10px 0; }
-        #chat-container { width: 100%; min-width: 0; }
+        :root {
+            /* Светлая тема (по умолчанию) */
+            --bg-main: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-main: #000000;
+            --text-secondary: #666666;
+            --accent: #007AFF;
+            --border-color: #e0e0e0;
+            --message-bg: #f0f0f0;
+            --message-own-bg: #e3f2fd;
+            --header-bg: #f8f8f8;
+            --hover-bg: rgba(0,0,0,0.05);
+            --shadow: rgba(0,0,0,0.1);
+        }
+
+        /* Тёмная тема */
+        body.theme-dark {
+            --bg-main: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-main: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #0A84FF;
+            --border-color: #404040;
+            --message-bg: #333333;
+            --message-own-bg: #1c4a6e;
+            --header-bg: #2d2d2d;
+            --hover-bg: rgba(255,255,255,0.1);
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        /* Голубая тема */
+        body.theme-blue {
+            --bg-main: #f0f7ff;
+            --bg-secondary: #e1f0ff;
+            --text-main: #1a1a1a;
+            --text-secondary: #4a6f8c;
+            --accent: #2b88ff;
+            --border-color: #cce4ff;
+            --message-bg: #e1f0ff;
+            --message-own-bg: #d1e8ff;
+            --header-bg: #e8f3ff;
+            --hover-bg: rgba(43,136,255,0.1);
+            --shadow: rgba(43,136,255,0.2);
+        }
+
+        /* Применяем переменные к элементам */
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+        #sidebar {
+            background: var(--bg-secondary);
+        }
+        .sidebar-header {
+            background: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .sidebar-chat-card {
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+        }
+        .message {
+            background: var(--message-bg);
+            color: var(--text-main);
+        }
+        .message.samrat {
+            background: var(--message-own-bg);
+        }
+        .modal-content {
+            background: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        input, select, button {
+            background: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        button:hover {
+            background: var(--hover-bg);
+        }
+        #main-layout { display: flex; flex-direction: row; height: 100vh; }
+        #sidebar { min-width: 0; width: 25vw; max-width: 400px; flex: 0 0 25vw; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0; background: var(--sidebar-bg, #f5f5f5); height: 100vh; box-sizing: border-box; }
+        .sidebar-header { 
+            width: 100%; 
+            padding: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            background: var(--header-bg, #e8e8e8);
+            box-sizing: border-box;
+            border-bottom: 1px solid var(--border-color, #ddd);
+        }
+        .sidebar-header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .sidebar-header button {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .sidebar-header button:hover {
+            background: var(--hover-bg, rgba(0,0,0,0.1));
+        }
+        .sidebar-header svg {
+            width: 20px;
+            height: 20px;
+        }
+        #sidebar-chats-list {
+            flex: 1;
+            width: 100%;
+            overflow-y: auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #chat-container { width: 75vw; min-width: 0; flex: 1 1 75vw; height: 100vh; box-sizing: border-box; }
         #add-user-block, #users-list { width: 100%; }
         #input-container { flex-direction: row; gap: 8px; }
         #message-input { width: 70vw; min-width: 120px; font-size: 16px; }
         #send-btn { font-size: 16px; padding: 8px 16px; }
         .modal-content { max-width: 95vw; min-width: 0; }
+        @media (max-width: 900px) {
+            #main-layout { flex-direction: column; height: auto; }
+            #sidebar, #chat-container { width: 100vw; max-width: 100vw; flex: none; height: auto; }
+        }
         @media (max-width: 600px) {
             #main-layout { flex-direction: column; }
-            #sidebar { flex-direction: column; align-items: stretch; gap: 8px; }
-            #chat-container { width: 100%; }
+            #sidebar { flex-direction: column; align-items: stretch; gap: 8px; width: 100vw; max-width: 100vw; height: auto; }
+            #chat-container { width: 100vw; max-width: 100vw; height: auto; }
             #messages { font-size: 15px; }
             #add-user-block, #users-list { width: 100%; }
             .modal-content { max-width: 98vw; padding: 10px; }
         }
+        .settings-section {
+            margin: 15px 0;
+            padding: 10px;
+            background: var(--bg-light, #f8f8f8);
+            border-radius: 8px;
+        }
+        .settings-section h4 {
+            margin: 0 0 10px 0;
+            color: var(--text-secondary, #666);
+        }
+        #account-info {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        #account-info p {
+            margin: 5px 0;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        #news-feed {
+            width: 28vw;
+            min-width: 220px;
+            max-width: 420px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            padding: 0 0 10px 0;
+        }
+        #news-feed h3 {
+            margin: 0;
+            padding: 18px 18px 10px 18px;
+            font-size: 20px;
+            color: var(--accent);
+        }
+        #news-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .news-item {
+            background: var(--bg-main);
+            border-radius: 10px;
+            box-shadow: 0 2px 8px var(--shadow);
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+        .news-item img, .news-item video {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+        #news-form {
+            padding: 12px 18px 0 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #news-text {
+            min-height: 48px;
+            resize: vertical;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            font-size: 15px;
+            background: var(--bg-main);
+            color: var(--text-main);
+        }
+        #news-media {
+            border: none;
+            background: none;
+            color: var(--text-main);
+        }
+        #news-publish {
+            align-self: flex-end;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 18px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 2px;
+            transition: background 0.2s;
+        }
+        #news-publish:hover {
+            background: #005bb5;
+        }
+        @media (max-width: 1200px) {
+            #news-feed { display: none; }
+        }
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--accent);
+            font-weight: bold;
+            overflow: hidden;
+        }
+        .avatar-small {
+            width: 28px;
+            height: 28px;
+            font-size: 15px;
+        }
+        #profile-avatar-upload {
+            display: none;
+        }
+        #profile-avatar-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            margin-top: 8px;
+            color: var(--accent);
+            font-size: 15px;
+        }
+        #tiktok-block {
+            margin-top: 18px;
+            padding: 0 18px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+        #tiktok-iframe-wrap iframe {
+            width: 100%;
+            min-height: 320px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #000;
+        }
     </style>
 </head>
 <body>
-    <div id="loader">
-        <div class="loader-content">
-            <div class="loader-spinner"></div>
-            <div class="loader-text">Загрузка KChat...</div>
-        </div>
-    </div>
+    <!-- <div id="loader"> ... </div> -->
     <div id="auth-modal" style="display:flex;">
         <div class="modal-content" id="auth-content">
             <h2 id="auth-title">Вход</h2>
             <div id="server-select-block" style="margin-bottom: 12px;">
                 <label for="server-select">Сервер:</label>
                 <select id="server-select">
-                    <option value="wss://kchat-7l77.onrender.com">Render (wss://kchat-7l77.onrender.com)</option>
+                    <option value="wss://kchat-7l77.onrender.com">Интернет сервер</option>
                     <option value="ws://localhost:3000">Локальный (ws://localhost:3000)</option>
                     <option value="custom">Другой...</option>
                 </select>
@@ -60,68 +324,29 @@
             </div>
         </div>
     </div>
-    <div id="main-layout" style="display:none;">
+    <div id="main-layout">
         <div id="sidebar">
-            <button id="theme-btn" title="Настройки темы">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" fill="currentColor"/>
-                </svg>
-            </button>
-            <div id="users-list"></div>
-            <div id="add-user-block">
-                <input type="text" id="add-user-input" placeholder="ID собеседника">
-                <button id="add-user-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 4.5v15m7.5-7.5h-15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div id="chat-container">
-            <div id="top-bar">
-                <div id="chat-header">
-                    <div id="chat-avatar"></div>
-                    <span id="chat-title"></span>
-                </div>
-                <div id="top-bar-actions">
+            <div class="sidebar-header">
+                <h2>KChat</h2>
+                <div class="sidebar-header-buttons">
+                    <button id="theme-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z" fill="currentColor"/>
+                        </svg>
+                    </button>
                     <button id="add-contact-btn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-                            <line x1="19" y1="8" x2="19" y2="14" stroke="currentColor" stroke-width="2"/>
-                            <line x1="22" y1="11" x2="16" y2="11" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                    </button>
-                    <button id="video-call-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <polygon points="23 7 16 12 23 17 23 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <rect x="1" y="5" width="15" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                    </button>
-                    <button id="voice-call-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
                         </svg>
                     </button>
                 </div>
             </div>
-            <div id="messages">
-                <div class="empty-chat">Нет сообщений. Напишите что-нибудь…</div>
-            </div>
+            <div id="sidebar-chats-list"></div>
+        </div>
+        <div id="chat-container">
+            <div id="messages"></div>
             <div id="input-container">
-                <button id="attach-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
                 <input type="text" id="message-input" placeholder="Сообщение">
-                <button id="emoji-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                        <path d="m9 9 1.5 1.5L12 9l1.5 1.5L15 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M8 15s1.5 2 4 2 4-2 4-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
                 <button id="send-btn">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <line x1="22" y1="2" x2="11" y2="13" stroke="currentColor" stroke-width="2"/>
@@ -144,11 +369,40 @@
     </div>
     <div id="settings-modal" style="display:none;">
         <div class="modal-content">
-            <label for="edit-text">Изменить текст сообщения:</label>
-            <input type="text" id="edit-text">
-            <button id="save-edit-btn">Сохранить</button>
-            <button id="delete-edit-btn">Удалить</button>
-            <button id="close-modal-btn">Отмена</button>
+            <h3>Настройки</h3>
+            <div class="settings-section">
+                <h4>Тема</h4>
+                <select id="theme-select">
+                    <option value="light">Светлая</option>
+                    <option value="dark">Тёмная</option>
+                    <option value="blue">Голубая</option>
+                </select>
+            </div>
+            <div class="settings-section">
+                <h4>Аккаунт</h4>
+                <div id="account-info">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span id="profile-avatar-wrap"></span>
+                        <label id="profile-avatar-label">
+                            <input type="file" id="profile-avatar-upload" accept="image/*">
+                            Сменить аватар
+                        </label>
+                    </div>
+                    <p>ID: <span id="account-id">-</span></p>
+                    <p>Ник: <span id="account-nick">-</span></p>
+                </div>
+            </div>
+            <button id="close-settings-btn">Закрыть</button>
+        </div>
+    </div>
+    <div id="add-contact-modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Добавить контакт</h3>
+            <input type="text" id="add-contact-id" placeholder="Введите ID пользователя">
+            <div class="modal-buttons">
+                <button id="add-contact-confirm">Добавить</button>
+                <button id="add-contact-cancel">Отмена</button>
+            </div>
         </div>
     </div>
     <script>
@@ -201,20 +455,24 @@
         function applyTheme(theme) {
             document.body.classList.remove('theme-light', 'theme-dark', 'theme-blue');
             document.body.classList.add('theme-' + theme);
+            localStorage.setItem('kchat-theme', theme);
+            // Обновляем select в настройках
+            const themeSelect = document.getElementById('theme-select');
+            if (themeSelect) {
+                themeSelect.value = theme;
+            }
         }
-        window.onload = function() {
+        // --- Показываем окно авторизации всегда при загрузке ---
+        document.addEventListener('DOMContentLoaded', function() {
             let savedTheme = localStorage.getItem('kchat-theme');
             if (!savedTheme) {
-                document.getElementById('loader').style.display = 'none';
                 document.getElementById('theme-modal').style.display = 'flex';
             } else {
                 applyTheme(savedTheme);
-                setTimeout(function() {
-                    document.getElementById('loader').style.display = 'none';
-                    tryAutoLogin();
-                }, 700);
             }
-        };
+            document.getElementById('auth-modal').style.display = 'flex';
+            document.getElementById('main-layout').style.display = 'none';
+        });
         document.getElementById('save-theme-btn').onclick = function() {
             let theme = document.getElementById('theme-select').value;
             localStorage.setItem('kchat-theme', theme);
@@ -257,7 +515,6 @@
                 showAuth('login');
             }
         }
-        showAuth('login');
         document.getElementById('show-register-btn').onclick = () => showAuth('register');
         document.getElementById('show-login-btn').onclick = () => showAuth('login');
         document.getElementById('login-btn').onclick = function() {
@@ -297,13 +554,6 @@
                 myNick = data.nick;
                 document.getElementById('auth-modal').style.display = 'none';
                 document.getElementById('main-layout').style.display = 'flex';
-                if (isAuto || saveAcc) {
-                    let acc = saveAcc ? saveAcc : {
-                        login: document.getElementById('login-login').value.trim(),
-                        password: document.getElementById('login-password').value
-                    };
-                    localStorage.setItem('kchat-account', JSON.stringify(acc));
-                }
                 initChat();
             } else if (data.system) {
                 alert(data.text);
@@ -312,6 +562,127 @@
             }
         }
 
+        // --- Меню выбора чата ---
+        function showChatMenu() {
+            document.getElementById('chat-menu').style.display = 'flex';
+            document.getElementById('chat-container').style.display = 'none';
+            renderMenuChats();
+        }
+        function showChatContainer() {
+            document.getElementById('chat-menu').style.display = 'none';
+            document.getElementById('chat-container').style.display = '';
+        }
+        function renderMenuChats() {
+            const listDiv = document.getElementById('menu-chats-list');
+            listDiv.innerHTML = '';
+            (users || []).forEach((userId) => {
+                const card = document.createElement('div');
+                card.className = 'menu-chat-card';
+                const avatar = document.createElement('div');
+                avatar.className = 'menu-chat-avatar';
+                avatar.textContent = userId.charAt(0).toUpperCase();
+                const info = document.createElement('div');
+                info.className = 'menu-chat-info';
+                const title = document.createElement('div');
+                title.className = 'menu-chat-title';
+                title.textContent = userId;
+                info.appendChild(title);
+                card.appendChild(avatar);
+                card.appendChild(info);
+                card.onclick = () => {
+                    currentUser = userId;
+                    localStorage.setItem('kchat-lastchat', userId);
+                    showChatContainer();
+                    renderUsers();
+                    renderMessages();
+                };
+                listDiv.appendChild(card);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const homeBtn = document.getElementById('home-btn');
+            const menuAddChatBtn = document.getElementById('menu-add-chat-btn');
+            const menuBotBtn = document.getElementById('menu-bot-btn');
+            const menuAccountBtn = document.getElementById('menu-account-btn');
+            const menuSettingsBtn = document.getElementById('menu-settings-btn');
+            const menuAddContactBtn = document.getElementById('menu-add-contact-btn');
+            const addContactModal = document.getElementById('add-contact-modal');
+            const addContactId = document.getElementById('add-contact-id');
+            const addContactConfirm = document.getElementById('add-contact-confirm');
+            const addContactCancel = document.getElementById('add-contact-cancel');
+            if (homeBtn) {
+                homeBtn.onclick = () => {
+                    showChatMenu();
+                };
+            }
+            if (menuAddContactBtn) {
+                menuAddContactBtn.onclick = () => {
+                    addContactModal.style.display = 'flex';
+                    addContactId.value = '';
+                    addContactId.focus();
+                };
+            }
+            if (addContactCancel) {
+                addContactCancel.onclick = () => {
+                    addContactModal.style.display = 'none';
+                };
+            }
+            if (addContactConfirm) {
+                addContactConfirm.onclick = () => {
+                    const id = addContactId.value.trim();
+                    if (id && !users.includes(id)) {
+                        users.push(id);
+                        chats[id] = [];
+                        addContactModal.style.display = 'none';
+                        showNotification('Контакт добавлен!', 'success');
+                        renderMenuChats();
+                    } else if (users.includes(id)) {
+                        showNotification('Контакт уже есть!', 'error');
+                    }
+                };
+            }
+            if (menuAddChatBtn) {
+                menuAddChatBtn.onclick = () => {
+                    document.getElementById('chat-menu').style.display = 'none';
+                    // Открыть окно добавления чата (или просто показать поле)
+                    // Можно реализовать модалку или инлайн-поле
+                    // Пока просто фокус на поле ввода (если оно есть)
+                    // alert('Добавление чата реализуйте по своему желанию');
+                };
+            }
+            if (menuBotBtn) {
+                menuBotBtn.onclick = () => {
+                    currentUser = '__bot__';
+                    if (!chats['__bot__']) {
+                        chats['__bot__'] = [];
+                        // Приветственное сообщение от бота
+                        chats['__bot__'].push({ 
+                            from: '__bot__', 
+                            nick: 'Помощник', 
+                            text: 'Привет! Я помощник HKC. Напишите "HKC, помощь" для списка команд.' 
+                        });
+                    }
+                    showChatContainer();
+                    renderUsers();
+                    renderMessages();
+                    setTimeout(() => {
+                        document.getElementById('message-input').focus();
+                    }, 100);
+                };
+            }
+            if (menuAccountBtn) {
+                menuAccountBtn.onclick = () => {
+                    alert('Аккаунт: ' + (myNick || 'Неизвестно') + (myId ? ' (ID: ' + myId + ')' : ''));
+                };
+            }
+            if (menuSettingsBtn) {
+                menuSettingsBtn.onclick = () => {
+                    themeModal.style.display = 'flex';
+                };
+            }
+            // Всегда показываем домашний экран после входа
+            showChatMenu();
+        });
         // --- Чат ---
         function initChat() {
             const usersListDiv = document.getElementById('users-list');
@@ -335,6 +706,8 @@
             const voiceCallBtn = document.getElementById('voice-call-btn');
             const attachBtn = document.getElementById('attach-btn');
             const emojiBtn = document.getElementById('emoji-btn');
+            const homeBtn = document.getElementById('home-btn');
+            const settingsBtn = document.getElementById('settings-btn');
 
             function renderUsers() {
                 usersListDiv.innerHTML = '';
@@ -370,30 +743,28 @@
             });
 
             function renderMessages() {
-                chatTitle.textContent = currentUser ? currentUser : '';
-                const chatAvatar = document.getElementById('chat-avatar');
-                if (currentUser) {
-                    addContactBtn.style.display = 'flex';
-                    chatAvatar.textContent = currentUser.charAt(0).toUpperCase();
+                if (currentUser === '__bot__') {
+                    chatTitle.textContent = 'Помощник';
+                    chatAvatar.textContent = '🤖';
                     chatAvatar.style.display = 'flex';
-                } else {
                     addContactBtn.style.display = 'none';
-                    chatAvatar.style.display = 'none';
                 }
                 messagesDiv.innerHTML = '';
-                if (!currentUser || !chats[currentUser] || chats[currentUser].length === 0) {
+                if (!currentUser) {
                     messagesDiv.innerHTML = `<div class="empty-chat">Нет сообщений. Напишите что-нибудь…</div>`;
-                } else {
+                } else if (chats[currentUser]) {
                     chats[currentUser].forEach((msg, idx) => {
                         const msgDiv = document.createElement('div');
                         msgDiv.className = `message ${msg.from === myId ? 'samrat' : 'other'}`;
                         msgDiv.innerHTML = `<span class="user">${msg.from === myId ? "Вы" : (msg.nick || msg.from)}:</span> ${msg.text}`;
-                        msgDiv.oncontextmenu = function(e) {
-                            e.preventDefault();
-                            editIdx = idx;
-                            editTextInput.value = msg.text;
-                            settingsModal.style.display = 'flex';
-                        };
+                        if (msg.from === myId) {
+                            msgDiv.oncontextmenu = function(e) {
+                                e.preventDefault();
+                                editIdx = idx;
+                                editTextInput.value = msg.text;
+                                settingsModal.style.display = 'flex';
+                            };
+                        }
                         messagesDiv.appendChild(msgDiv);
                     });
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -402,10 +773,29 @@
 
             sendBtn.onclick = () => {
                 const text = messageInput.value.trim();
-                if (text && currentUser && ws && ws.readyState === 1) {
+                if (text && currentUser && ws && ws.readyState === 1 && currentUser !== '__bot__') {
                     ws.send(JSON.stringify({ type: 'msg', to: currentUser, text }));
                     if (!chats[currentUser]) chats[currentUser] = [];
                     chats[currentUser].push({ from: myId, nick: myNick, text });
+                    messageInput.value = '';
+                    renderMessages();
+                }
+                // Для помощника
+                else if (text && currentUser === '__bot__') {
+                    if (!chats['__bot__']) chats['__bot__'] = [];
+                    chats['__bot__'].push({ from: myId, nick: myNick, text });
+                    const replyOrPromise = getBotReply(text);
+                    if (replyOrPromise instanceof Promise) {
+                        replyOrPromise.then(reply => {
+                            chats['__bot__'].push({ from: '__bot__', nick: 'Помощник', text: reply });
+                            renderMessages();
+                        });
+                    } else {
+                        setTimeout(() => {
+                            chats['__bot__'].push({ from: '__bot__', nick: 'Помощник', text: replyOrPromise });
+                            renderMessages();
+                        }, 400);
+                    }
                     messageInput.value = '';
                     renderMessages();
                 }
@@ -462,6 +852,17 @@
             };
             themeSelect.onchange = () => {
                 applyTheme(themeSelect.value);
+            };
+
+            homeBtn.onclick = () => {
+                currentUser = null;
+                localStorage.removeItem('kchat-lastchat');
+                renderUsers();
+                renderMessages();
+            };
+
+            settingsBtn.onclick = () => {
+                settingsModal.style.display = 'flex';
             };
 
             // --- Контакты ---
@@ -542,6 +943,687 @@
 
             renderUsers();
             renderMessages();
+        }
+
+        // --- Переводчик ---
+        async function translateText(text, targetLang) {
+            const url = 'https://google-translate1.p.rapidapi.com/language/translate/v2';
+            const params = new URLSearchParams();
+            params.append('q', text);
+            params.append('target', targetLang);
+            params.append('source', 'auto');
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'Accept-Encoding': 'application/gzip',
+                    'X-RapidAPI-Key': '2b92c1f5e6msh888d1aba9edebc0p1f0361jsn18fc0f8a7da0',
+                    'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
+                },
+                body: params
+            });
+            const data = await response.json();
+            return data.data.translations[0].translatedText;
+        }
+
+        // --- Помощник ---
+        function getBotReply(text) {
+            const t = text.trim().toLowerCase();
+            // --- Переводчик ---
+            if (/hkc[ ,]*переведи.*на/.test(t)) {
+                // Пример: HKC, переведи "hello" на русский
+                const match = t.match(/переведи[ ]*["']?(.+?)["']? на ([а-яa-z]+)/i);
+                if (match) {
+                    const phrase = match[1];
+                    const lang = match[2];
+                    const langMap = { 'русский': 'ru', 'английский': 'en', 'казахский': 'kk', 'немецкий': 'de', 'французский': 'fr', 'kz': 'kk', 'en': 'en', 'ru': 'ru' };
+                    const targetLang = langMap[lang.toLowerCase()] || 'ru';
+                    return new Promise(async (resolve) => {
+                        try {
+                            const translated = await translateText(phrase, targetLang);
+                            resolve('Перевод: ' + translated);
+                        } catch (e) {
+                            resolve('Ошибка перевода: ' + e.message);
+                        }
+                    });
+                }
+            }
+            // Базовые команды
+            if (/hkc[ ,]*старт|hkc[ ,]*начать/.test(t)) return 'HKC активирован! Чем могу помочь?';
+            if (/hkc[ ,]*помощь/.test(t)) return 'Вот что я умею:\n- Погода: "HKC, погода в Алматы"\n- Курсы валют: "HKC, курс доллара"\n- Новости: "HKC, свежие новости Казахстана"\n- Госуслуги: "HKC, как проверить штрафы?"\n- Переводы: "HKC, переведи ..."\n- Таймеры: "HKC, таймер 20 минут"\n- Математика: "HKC, сколько будет 15000 тенге в рублях?"\n- Традиции: "HKC, что такое Наурыз?"\n- Бизнес: "HKC, какие документы нужны для ИП?"\n- Развлечения: "HKC, анекдот"';
+            if (/hkc[ ,]*ты работаешь/.test(t)) return 'Да, я онлайн. Задайте вопрос!';
+            if (/hkc[ ,]*кто тебя создал/.test(t)) return 'Моя команда разработчиков из Казахстана :)';
+            // Локализация
+            if (/hkc[ ,]*погода/.test(t)) return 'Погода: эта функция появится скоро!';
+            if (/hkc[ ,]*курс|hkc[ ,]*обменный курс/.test(t)) return 'Курсы валют: эта функция появится скоро!';
+            if (/hkc[ ,]*новости/.test(t)) return 'Новости Казахстана: эта функция появится скоро!';
+            if (/hkc[ ,]*штраф|hkc[ ,]*справк/.test(t)) return 'Госуслуги: эта функция появится скоро!';
+            // Утилиты
+            if (/hkc[ ,]*переведи.*спасибо/.test(t)) return 'Рахмет';
+            if (/hkc[ ,]*переведи.*привет/.test(t)) return 'Сәлем';
+            if (/hkc[ ,]*как сказать.*привет/.test(t)) return 'Сәлем';
+            if (/hkc[ ,]*напомни/.test(t)) return 'Напоминание установлено (заглушка).';
+            if (/hkc[ ,]*таймер/.test(t)) return 'Таймер запущен (заглушка).';
+            if (/hkc[ ,]*сколько будет/.test(t)) return 'Калькулятор: эта функция появится скоро!';
+            if (/hkc[ ,]*ндс/.test(t)) return 'Расчёт НДС: эта функция появится скоро!';
+            // Образование и культура
+            if (/hkc[ ,]*наурыз/.test(t)) return 'Наурыз — главный весенний праздник у казахов, символ обновления природы.';
+            if (/hkc[ ,]*бешбармак/.test(t)) return 'Бешбармак — традиционное казахское блюдо из мяса и лапши.';
+            if (/hkc[ ,]*тест.*казахск/.test(t)) return 'Как будет "семья" по-казахски? — "Отбасы"';
+            if (/hkc[ ,]*склонение.*қазақстан/.test(t)) return 'Склонение: Қазақстан — Қазақстанда, Қазақстаннан, Қазақстанға и т.д.';
+            // Для бизнеса
+            if (/hkc[ ,]*где.*валюту/.test(t)) return 'Пункты обмена валюты: эта функция появится скоро!';
+            if (/hkc[ ,]*налоговой/.test(t)) return 'Номер налоговой Астаны: +7 (7172) 123-456';
+            if (/hkc[ ,]*документ.*ип/.test(t)) return 'Для открытия ИП нужны: удостоверение личности, заявление, адрес.';
+            if (/hkc[ ,]*закон.*цифровых валют/.test(t)) return 'Закон о цифровых валютах РК: эта функция появится скоро!';
+            // Развлечения
+            if (/hkc[ ,]*фильм/.test(t)) return 'Казахские фильмы можно смотреть на kinopoisk.kz, ivi.kz, or Qazaqstan TV.';
+            if (/hkc[ ,]*песня.*аққуым/.test(t)) return 'Текст песни "Аққуым": эта функция появится скоро!';
+            if (/hkc[ ,]*загадк/.test(t)) return 'Загадка: Без языка, а говорит. (Ответ: Колокол)';
+            if (/hkc[ ,]*первый президент/.test(t)) return 'Первый президент РК — Нурсултан Назарбаев.';
+            // Техподдержка
+            if (/hkc[ ,]*очистить кэш/.test(t)) return 'Чтобы очистить кэш, откройте настройки браузера и выберите "Очистить кэш".';
+            if (/hkc[ ,]*ошибка 404/.test(t)) return 'Ошибка 404 — страница не найдена. Проверьте адрес.';
+            if (/hkc[ ,]*статус api/.test(t)) return 'API работает нормально (заглушка).';
+            if (/hkc[ ,]*лог[иы]/.test(t)) return 'Последние логи: эта функция появится скоро!';
+            // Пример диалога
+            if (/hkc[ ,]*где купить билеты/.test(t)) return 'Билеты можно купить на сайте railway.kz или через приложение "ЖД билеты РК". Хотите ссылку?';
+            // Общие ответы
+            if (t.includes('привет')) return 'Привет! Чем могу помочь?';
+            if (t.includes('время')) return 'Сейчас ' + new Date().toLocaleTimeString();
+            if (t.includes('как тебя зовут')) return 'Я помощник HKC!';
+            if (t.includes('помоги')) return 'Напишите "HKC, помощь" для списка команд.';
+            if (t.includes('анекдот')) return 'Колобок повесился. (шутка!)';
+            if (t.includes('погода')) return 'Погода: эта функция появится скоро!';
+            if (t.includes('спасибо')) return 'Пожалуйста!';
+            if (t.includes('команды')) return 'Доступные команды: HKC, помощь, погода, курс, новости, госуслуги, переводы, таймер, математика, традиции, бизнес, развлечения, техподдержка.';
+            if (t.includes('пока')) return 'До встречи!';
+            return 'Я не понял, попробуйте спросить по-другому или напишите "HKC, помощь".';
+        }
+
+        // --- Аватарки ---
+        function getMyAvatar() {
+            return localStorage.getItem('kchat-avatar') || '';
+        }
+        function setMyAvatar(dataUrl) {
+            localStorage.setItem('kchat-avatar', dataUrl);
+        }
+        function renderProfileAvatar() {
+            const wrap = document.getElementById('profile-avatar-wrap');
+            if (!wrap) return;
+            wrap.innerHTML = '';
+            const avatarUrl = getMyAvatar();
+            let el;
+            if (avatarUrl) {
+                el = document.createElement('img');
+                el.src = avatarUrl;
+                el.className = 'avatar';
+                el.alt = 'avatar';
+            } else {
+                el = document.createElement('div');
+                el.className = 'avatar';
+                el.textContent = (myNick ? myNick[0] : 'U').toUpperCase();
+            }
+            wrap.appendChild(el);
+        }
+        // --- Вставка аватарки в карточки чатов ---
+        function getUserAvatar(userId) {
+            if (userId === myId) return getMyAvatar();
+            // Можно расширить: хранить аватарки других пользователей
+            return '';
+        }
+        // --- Добавляем специальные чаты ---
+        const SPECIAL_CHATS = [
+            { id: '__news__', name: 'Новости', icon: '📰' }
+        ];
+        function renderSidebarChats() {
+            const listDiv = document.getElementById('sidebar-chats-list');
+            listDiv.innerHTML = '';
+            // Спецчаты сверху
+            SPECIAL_CHATS.forEach(special => {
+                const card = document.createElement('div');
+                card.className = 'sidebar-chat-card' + (special.id === currentUser ? ' active' : '');
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = special.icon;
+                card.appendChild(avatar);
+                const info = document.createElement('div');
+                info.className = 'sidebar-chat-info';
+                const title = document.createElement('div');
+                title.className = 'sidebar-chat-title';
+                title.textContent = special.name;
+                info.appendChild(title);
+                card.appendChild(info);
+                card.onclick = () => {
+                    currentUser = special.id;
+                    renderSidebarChats();
+                    renderMessages();
+                };
+                listDiv.appendChild(card);
+            });
+            // Обычные чаты
+            const allChats = ['__bot__', ...users.filter(u => u !== '__bot__')];
+            allChats.forEach((userId) => {
+                const card = document.createElement('div');
+                card.className = 'sidebar-chat-card' + (userId === currentUser ? ' active' : '');
+                let avatar;
+                if (userId === '__bot__') {
+                    avatar = document.createElement('div');
+                    avatar.className = 'avatar';
+                    avatar.textContent = '🤖';
+                } else {
+                    const avatarUrl = getUserAvatar(userId);
+                    if (avatarUrl) {
+                        avatar = document.createElement('img');
+                        avatar.src = avatarUrl;
+                        avatar.className = 'avatar';
+                        avatar.alt = 'avatar';
+                    } else {
+                        avatar = document.createElement('div');
+                        avatar.className = 'avatar';
+                        avatar.textContent = userId.charAt(0).toUpperCase();
+                    }
+                }
+                card.appendChild(avatar);
+                const info = document.createElement('div');
+                info.className = 'sidebar-chat-info';
+                const title = document.createElement('div');
+                title.className = 'sidebar-chat-title';
+                title.textContent = userId === '__bot__' ? 'Помощник' : userId;
+                const lastMsg = (chats[userId] && chats[userId].length > 0) ? chats[userId][chats[userId].length-1] : null;
+                const msg = document.createElement('div');
+                msg.className = 'sidebar-chat-msg';
+                msg.textContent = lastMsg ? (lastMsg.text.length > 30 ? lastMsg.text.slice(0,30)+'…' : lastMsg.text) : '';
+                info.appendChild(title);
+                info.appendChild(msg);
+                card.appendChild(info);
+                card.onclick = () => {
+                    currentUser = userId;
+                    renderSidebarChats();
+                    renderMessages();
+                };
+                listDiv.appendChild(card);
+            });
+        }
+
+        // --- Аватарки в сообщениях ---
+        function renderMessages() {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            // --- Новости как чат ---
+            if (currentUser === '__news__') {
+                messagesDiv.innerHTML = '';
+                news.slice().reverse().forEach(item => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'message';
+                    let avatarHtml = '';
+                    if (item.avatar) {
+                        avatarHtml = `<img src="${item.avatar}" class="avatar avatar-small" alt="avatar">`;
+                    } else {
+                        avatarHtml = `<span class="avatar avatar-small">${(item.nick||'U')[0].toUpperCase()}</span>`;
+                    }
+                    msgDiv.innerHTML = `<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px;'>${avatarHtml}<b>${item.nick||'Пользователь'}</b></div><div>${item.text}</div>`;
+                    if (item.media && item.mediaType) {
+                        if (item.mediaType.startsWith('image/')) {
+                            msgDiv.innerHTML += `<img src="${item.media}" alt="news image">`;
+                        } else if (item.mediaType.startsWith('video/')) {
+                            msgDiv.innerHTML += `<video src="${item.media}" controls></video>`;
+                        }
+                    }
+                    messagesDiv.appendChild(msgDiv);
+                });
+                // Форма публикации новости
+                const formDiv = document.createElement('div');
+                formDiv.style.marginTop = '18px';
+                formDiv.innerHTML = `
+                    <textarea id="news-text" placeholder="Текст новости..." style="width:100%;min-height:48px;margin-bottom:6px;"></textarea>
+                    <input type="file" id="news-media" accept="image/*,video/*" style="margin-bottom:6px;">
+                    <button id="news-publish">Опубликовать</button>
+                `;
+                messagesDiv.appendChild(formDiv);
+                // Обработчик публикации
+                setTimeout(() => {
+                    const newsPublish = document.getElementById('news-publish');
+                    if (newsPublish) {
+                        newsPublish.onclick = async function() {
+                            const text = document.getElementById('news-text').value.trim();
+                            const mediaInput = document.getElementById('news-media');
+                            let media = null, mediaType = null;
+                            if (mediaInput.files && mediaInput.files[0]) {
+                                const file = mediaInput.files[0];
+                                mediaType = file.type;
+                                media = await new Promise(r => {
+                                    const reader = new FileReader();
+                                    reader.onload = e => r(e.target.result);
+                                    reader.readAsDataURL(file);
+                                });
+                            }
+                            if (!text && !media) return;
+                            news.push({ text, media, mediaType, date: Date.now(), avatar: getMyAvatar(), nick: myNick });
+                            localStorage.setItem('kchat-news', JSON.stringify(news));
+                            renderMessages();
+                        };
+                    }
+                }, 0);
+                return;
+            }
+            // --- TikTok как чат ---
+            if (currentUser === '__tiktok__') {
+                messagesDiv.innerHTML = '';
+                // Встраиваем TikTok через прокси (VPN)
+                const tiktokWrap = document.createElement('div');
+                tiktokWrap.style.width = '100%';
+                tiktokWrap.style.height = '80vh';
+                tiktokWrap.style.position = 'relative';
+                tiktokWrap.innerHTML = `
+                    <iframe id="tiktok-vpn-frame" src="https://proxy.tube/browse.php?u=https%3A%2F%2Fwww.tiktok.com%2F" style="width:100%;height:100%;border-radius:12px;border:1px solid var(--border-color);background:#000;" allowfullscreen></iframe>
+                    <div id="tiktok-fail" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;align-items:center;justify-content:center;flex-direction:column;z-index:2;">
+                        <div style='margin-bottom:18px;'>Не удалось загрузить TikTok внутри сайта.<br>Откройте TikTok через VPN в новой вкладке:</div>
+                        <a href="https://proxy.tube/browse.php?u=https%3A%2F%2Fwww.tiktok.com%2F" target="_blank" style="background:var(--accent);color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:18px;">Открыть TikTok</a>
+                    </div>
+                `;
+                messagesDiv.appendChild(tiktokWrap);
+                // Проверка загрузки iframe (если заблокировано)
+                setTimeout(() => {
+                    const iframe = document.getElementById('tiktok-vpn-frame');
+                    let loaded = false;
+                    if (iframe) {
+                        iframe.onload = function() { loaded = true; };
+                        setTimeout(() => {
+                            if (!loaded) {
+                                document.getElementById('tiktok-fail').style.display = 'flex';
+                            }
+                        }, 6000);
+                    }
+                }, 0);
+                return;
+            }
+            // Обычные сообщения
+            if (!currentUser || !chats[currentUser] || chats[currentUser].length === 0) {
+                messagesDiv.innerHTML = `<div class="empty-chat">Нет сообщений. Напишите что-нибудь…</div>`;
+                return;
+            }
+            chats[currentUser].forEach((msg, idx) => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${msg.from === myId ? 'samrat' : 'other'}`;
+                let avatarHtml = '';
+                if (msg.from === myId) {
+                    const avatarUrl = getMyAvatar();
+                    if (avatarUrl) {
+                        avatarHtml = `<img src="${avatarUrl}" class="avatar avatar-small" alt="avatar">`;
+                    } else {
+                        avatarHtml = `<span class="avatar avatar-small">${(myNick||'U')[0].toUpperCase()}</span>`;
+                    }
+                } else if (msg.from === '__bot__') {
+                    avatarHtml = `<span class="avatar avatar-small">🤖</span>`;
+                } else {
+                    avatarHtml = `<span class="avatar avatar-small">${(msg.nick||msg.from)[0].toUpperCase()}</span>`;
+                }
+                let contentHtml = `<span class="user">${msg.from === myId ? "Вы" : (msg.nick || msg.from)}:</span> ${msg.text}`;
+                if (msg.media && msg.mediaType && msg.mediaType.startsWith('video/')) {
+                    contentHtml += `<br><video src="${msg.media}" controls style='width:100%;max-width:320px;border-radius:10px;margin-top:6px;'></video>`;
+                }
+                msgDiv.innerHTML = `${avatarHtml} ${contentHtml}`;
+                messagesDiv.appendChild(msgDiv);
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // --- Аватарки в новостях ---
+        function renderNews() {
+            const newsList = document.getElementById('news-list');
+            if (!newsList) return;
+            newsList.innerHTML = '';
+            news.slice().reverse().forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'news-item';
+                let avatarHtml = '';
+                if (item.avatar) {
+                    avatarHtml = `<img src="${item.avatar}" class="avatar avatar-small" alt="avatar">`;
+                } else {
+                    avatarHtml = `<span class="avatar avatar-small">${(item.nick||'U')[0].toUpperCase()}</span>`;
+                }
+                div.innerHTML = `<div style='display:flex;align-items:center;gap:10px;margin-bottom:6px;'>${avatarHtml}<b>${item.nick||'Пользователь'}</b></div><div>${item.text}</div>`;
+                if (item.media && item.mediaType) {
+                    if (item.mediaType.startsWith('image/')) {
+                        div.innerHTML += `<img src="${item.media}" alt="news image">`;
+                    } else if (item.mediaType.startsWith('video/')) {
+                        div.innerHTML += `<video src="${item.media}" controls></video>`;
+                    }
+                }
+                newsList.appendChild(div);
+            });
+        }
+
+        // При загрузке и после любого действия:
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSidebarChats();
+            renderMessages();
+            renderProfileAvatar(); // Загрузка аватарки при загрузке страницы
+        });
+        // После отправки сообщения, добавления контакта и т.д. — вызывать renderSidebarChats() и renderMessages()
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработчики для новых кнопок
+            const themeBtn = document.getElementById('theme-btn');
+            const addContactBtn = document.getElementById('add-contact-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettingsBtn = document.getElementById('close-settings-btn');
+            const addContactModal = document.getElementById('add-contact-modal');
+            const addContactConfirm = document.getElementById('add-contact-confirm');
+            const addContactCancel = document.getElementById('add-contact-cancel');
+            const accountId = document.getElementById('account-id');
+            const accountNick = document.getElementById('account-nick');
+
+            // Обновляем информацию об аккаунте
+            function updateAccountInfo() {
+                if (myId && myNick) {
+                    accountId.textContent = myId;
+                    accountNick.textContent = myNick;
+                }
+            }
+
+            // Обработчики кнопок
+            themeBtn.onclick = () => {
+                updateAccountInfo();
+                settingsModal.style.display = 'flex';
+            };
+
+            closeSettingsBtn.onclick = () => {
+                settingsModal.style.display = 'none';
+            };
+
+            addContactBtn.onclick = () => {
+                addContactModal.style.display = 'flex';
+                document.getElementById('add-contact-id').value = '';
+                document.getElementById('add-contact-id').focus();
+            };
+
+            addContactCancel.onclick = () => {
+                addContactModal.style.display = 'none';
+            };
+
+            addContactConfirm.onclick = () => {
+                const id = document.getElementById('add-contact-id').value.trim();
+                if (id && !users.includes(id)) {
+                    users.push(id);
+                    chats[id] = [];
+                    addContactModal.style.display = 'none';
+                    showNotification('Контакт добавлен!', 'success');
+                    renderSidebarChats();
+                } else if (users.includes(id)) {
+                    showNotification('Контакт уже есть!', 'error');
+                }
+            };
+
+            // Закрытие модальных окон по клику вне их области
+            window.onclick = (event) => {
+                if (event.target === settingsModal) {
+                    settingsModal.style.display = 'none';
+                }
+                if (event.target === addContactModal) {
+                    addContactModal.style.display = 'none';
+                }
+            };
+        });
+
+        let news = JSON.parse(localStorage.getItem('kchat-news') || '[]');
+        // --- Загрузка аватарки ---
+        document.addEventListener('DOMContentLoaded', function() {
+            renderProfileAvatar();
+            const avatarInput = document.getElementById('profile-avatar-upload');
+            if (avatarInput) {
+                avatarInput.onchange = function() {
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            setMyAvatar(e.target.result);
+                            renderProfileAvatar();
+                            renderSidebarChats();
+                            renderMessages();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+            }
+        });
+
+        // --- Публикация новости с аватаркой ---
+        document.addEventListener('DOMContentLoaded', function() {
+            renderNews();
+            const newsPublish = document.getElementById('news-publish');
+            if (newsPublish) {
+                newsPublish.onclick = async function() {
+                    const text = document.getElementById('news-text').value.trim();
+                    const mediaInput = document.getElementById('news-media');
+                    let media = null, mediaType = null;
+                    if (mediaInput.files && mediaInput.files[0]) {
+                        const file = mediaInput.files[0];
+                        mediaType = file.type;
+                        media = await new Promise(r => {
+                            const reader = new FileReader();
+                            reader.onload = e => r(e.target.result);
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                    if (!text && !media) return;
+                    news.push({ text, media, mediaType, date: Date.now(), avatar: getMyAvatar(), nick: myNick });
+                    localStorage.setItem('kchat-news', JSON.stringify(news));
+                    document.getElementById('news-text').value = '';
+                    mediaInput.value = '';
+                    renderNews();
+                };
+            }
+        });
+
+        // --- TikTok VPN ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const tiktokBtn = document.getElementById('tiktok-load');
+            if (tiktokBtn) {
+                tiktokBtn.onclick = function() {
+                    const url = document.getElementById('tiktok-url').value.trim();
+                    const wrap = document.getElementById('tiktok-iframe-wrap');
+                    wrap.innerHTML = '';
+                    if (!url || !/^https?:\/\/(www\.)?tiktok\.com\//.test(url)) {
+                        wrap.innerHTML = '<div style="color:red;">Введите корректную ссылку на TikTok</div>';
+                        return;
+                    }
+                    // Прокси-iframe (эмуляция VPN):
+                    // Можно использовать публичные прокси-сервисы, например https://proxy.tube или https://corsproxy.io/?
+                    // Для демонстрации используем corsproxy.io
+                    const proxied = 'https://corsproxy.io/?' + encodeURIComponent(url);
+                    wrap.innerHTML = `<iframe src="${proxied}" allowfullscreen frameborder="0"></iframe>`;
+                };
+            }
+        });
+
+        // Массив популярных хештегов для разнообразия контента
+        const TIKTOK_TAGS = [
+            'viral', 'trending', 'dance', 'funny', 'comedy', 'music', 'food', 'gaming',
+            'sport', 'animals', 'art', 'beauty', 'fashion', 'nature', 'travel'
+        ];
+
+        // Функция для получения случайного видео
+        async function getRandomTikTok() {
+            try {
+                // Берём случайный тег
+                const tag = TIKTOK_TAGS[Math.floor(Math.random() * TIKTOK_TAGS.length)];
+                // Используем API для получения трендовых видео по тегу
+                const api = `https://api.tiklydown.me/api/trending?tag=${tag}&count=1`;
+                const resp = await fetch(api);
+                const data = await resp.json();
+                if (data && data.videos && data.videos.length > 0) {
+                    return data.videos[0];
+                }
+                return null;
+            } catch (e) {
+                console.error('Error getting random TikTok:', e);
+                return null;
+            }
+        }
+
+        // Функция для загрузки следующей партии видео
+        async function loadMoreTikToks(count = 3) {
+            const wrap = document.getElementById('tiktok-video-wrap');
+            if (!wrap) return;
+            
+            wrap.innerHTML += '<div class="loading-more">Загружаем новые видео...</div>';
+            
+            for (let i = 0; i < count; i++) {
+                const video = await getRandomTikTok();
+                if (video && video.video && video.video.noWatermark) {
+                    const videoDiv = document.createElement('div');
+                    videoDiv.className = 'tiktok-video-item';
+                    videoDiv.innerHTML = `
+                        <div class="video-header">
+                            <span class="video-author">${video.author || 'TikTok'}</span>
+                            <button class="send-video-btn" data-url="${video.video.noWatermark}">Отправить</button>
+                        </div>
+                        <video src="${video.video.noWatermark}" controls loop style="width:100%;border-radius:10px;margin:8px 0;"></video>
+                        <div class="video-desc">${video.description || ''}</div>
+                    `;
+                    wrap.appendChild(videoDiv);
+                    
+                    // Добавляем обработчик для кнопки отправки
+                    const sendBtn = videoDiv.querySelector('.send-video-btn');
+                    if (sendBtn) {
+                        sendBtn.onclick = function() {
+                            const videoUrl = this.getAttribute('data-url');
+                            let chatList = users.filter(u => u !== '__bot__');
+                            let selectHtml = `
+                                <div class="send-video-modal">
+                                    <select id="tiktok-send-to-${i}">
+                                        ${chatList.map(u => `<option value="${u}">${u}</option>`).join('')}
+                                    </select>
+                                    <button onclick="sendTikTokTo('${videoUrl}', 'tiktok-send-to-${i}')">Отправить</button>
+                                </div>
+                            `;
+                            this.insertAdjacentHTML('afterend', selectHtml);
+                            this.style.display = 'none';
+                        };
+                    }
+                }
+            }
+            
+            const loading = wrap.querySelector('.loading-more');
+            if (loading) loading.remove();
+        }
+
+        // Функция для отправки видео в чат
+        function sendTikTokTo(videoUrl, selectId) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            
+            const to = select.value;
+            if (!chats[to]) chats[to] = [];
+            chats[to].push({ 
+                from: myId, 
+                nick: myNick, 
+                text: '[TikTok видео]', 
+                media: videoUrl, 
+                mediaType: 'video/mp4' 
+            });
+            
+            // Удаляем селект и показываем уведомление
+            const modal = select.closest('.send-video-modal');
+            if (modal) {
+                const btn = modal.previousElementSibling;
+                if (btn) btn.style.display = '';
+                modal.remove();
+            }
+            showNotification('Видео отправлено!', 'success');
+        }
+
+        // Обновляем стили
+        const style = document.createElement('style');
+        style.textContent = `
+            .tiktok-video-item {
+                background: var(--bg-main);
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 16px;
+                border: 1px solid var(--border-color);
+            }
+            .video-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .video-author {
+                font-weight: bold;
+                color: var(--accent);
+            }
+            .send-video-btn {
+                padding: 4px 12px;
+                border-radius: 6px;
+                background: var(--accent);
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+            .send-video-modal {
+                margin-top: 8px;
+                display: flex;
+                gap: 8px;
+            }
+            .loading-more {
+                text-align: center;
+                padding: 10px;
+                color: var(--text-secondary);
+            }
+            #load-more-btn {
+                width: 100%;
+                padding: 10px;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                margin-top: 16px;
+                cursor: pointer;
+            }
+            #load-more-btn:hover {
+                background: var(--hover-bg);
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Обновляем отображение TikTok чата
+        if (currentUser === '__tiktok__') {
+            messagesDiv.innerHTML = '';
+            // Встраиваем TikTok через прокси (VPN)
+            const tiktokWrap = document.createElement('div');
+            tiktokWrap.style.width = '100%';
+            tiktokWrap.style.height = '80vh';
+            tiktokWrap.style.position = 'relative';
+            tiktokWrap.innerHTML = `
+                <iframe id="tiktok-vpn-frame" src="https://proxy.tube/browse.php?u=https%3A%2F%2Fwww.tiktok.com%2F" style="width:100%;height:100%;border-radius:12px;border:1px solid var(--border-color);background:#000;" allowfullscreen></iframe>
+                <div id="tiktok-fail" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);color:#fff;align-items:center;justify-content:center;flex-direction:column;z-index:2;">
+                    <div style='margin-bottom:18px;'>Не удалось загрузить TikTok внутри сайта.<br>Откройте TikTok через VPN в новой вкладке:</div>
+                    <a href="https://proxy.tube/browse.php?u=https%3A%2F%2Fwww.tiktok.com%2F" target="_blank" style="background:var(--accent);color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:18px;">Открыть TikTok</a>
+                </div>
+            `;
+            messagesDiv.appendChild(tiktokWrap);
+            // Проверка загрузки iframe (если заблокировано)
+            setTimeout(() => {
+                const iframe = document.getElementById('tiktok-vpn-frame');
+                let loaded = false;
+                if (iframe) {
+                    iframe.onload = function() { loaded = true; };
+                    setTimeout(() => {
+                        if (!loaded) {
+                            document.getElementById('tiktok-fail').style.display = 'flex';
+                        }
+                    }, 6000);
+                }
+            }, 0);
+            return;
+        }
+
+        // TikTok видео, загруженные пользователями (храним в localStorage)
+        let tiktokUserVideos = JSON.parse(localStorage.getItem('kchat-tiktok-videos') || '[]');
+
+        function saveTiktokUserVideos() {
+            localStorage.setItem('kchat-tiktok-videos', JSON.stringify(tiktokUserVideos));
         }
 
     </script>
